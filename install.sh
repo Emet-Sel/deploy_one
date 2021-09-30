@@ -337,9 +337,11 @@ after_start_services() {
   _info "%s" "正在检查初始数据..."
   sleep 5
 
-  clt_one_nw=$(docker network ls -q -f NAME=clt_deploy_one-nw)
-  sed -e 's/br-clt_one_nw/br-'${clt_one_nw}'/g' ${TEMPLATE_DIR}/nftables.conf > /etc/sysconfig/nftables.conf
-  nft -f /etc/sysconfig/nftables.conf
+  if [ "$(grep "_open_nft" $OLDPWD/config | awk -F= '{print $2}')" ];then
+    clt_one_nw=$(docker network ls -q -f NAME=clt_deploy_one-nw)
+    sed -e 's/br-clt_one_nw/br-'${clt_one_nw}'/g' ${TEMPLATE_DIR}/nftables.conf > /etc/sysconfig/nftables.conf
+    nft -f /etc/sysconfig/nftables.conf
+  fi
 
   local enc_mysql_password=$(_get_env "${OUTPUT_DIR}/.env" "MYSQL_PASSWORD") \
   && enc_mysql_password=${enc_mysql_password#*ENC(} && enc_mysql_password=${enc_mysql_password%*)}
